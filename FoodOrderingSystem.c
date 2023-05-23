@@ -23,7 +23,7 @@ int main(){
         payment[i] = 0;
 
     //count lines in file to determine size alloted for array of structs foodmenu
-    FILE* fileCounter = fopen("/Users/Melu/Documents/Code/CFinalProject/menu.csv","r");
+    FILE* fileCounter = fopen("menu.csv","r");
     //catcher if menu.csv is not found
     if(fileCounter==NULL){ 
         printf("Menu is out of order.");
@@ -44,7 +44,7 @@ int main(){
     struct foodMenu order[size];     //declare array of struct foodmenu
 
     //transfer data from file to foodmenu_class array
-    FILE* fileTransfer = fopen("/Users/Melu/Documents/Code/CFinalProject/menu.csv","r");
+    FILE* fileTransfer = fopen("menu.csv","r");
     char lineTransfer[1024];
     fgets(lineTransfer, 1024, fileTransfer); //reads first line (labels in csv file)
     for(int i=0; i < size ; i++){
@@ -229,7 +229,7 @@ void getOrder(char name[], struct foodMenu order[], int size, int foodNameError,
 
 void record(struct foodMenu order[], int size){
     //open file to append
-    FILE* fileRecord = fopen("/Users/Melu/Documents/Code/CFinalProject/records.csv", "a");
+    FILE* fileRecord = fopen("records.csv", "a");
     fprintf(fileRecord, "\n");  //print newline
     time_t t;
     t = time(NULL);
