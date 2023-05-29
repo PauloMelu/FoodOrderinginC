@@ -3,21 +3,25 @@
 #include<string.h>
 #include<ctype.h>
 #include<time.h>
-void getOrder();
-void receipt();
-char mainMenu();
-double cost();
-void displayOrder();
-int equalsIgnoreCase();
-int paymentMenu();
-void record();
+
 struct foodMenu{
     char name[1024];
     int qty;
     double price;
 };
-int size = 0;  //counter of food available in menu
+
+void getOrder(char name[], struct foodMenu order[], int size, int foodNameError, char foodName[], int qtyError);
+void receipt(char name[], struct foodMenu order[], int size);
+char mainMenu(int error);
+double cost(struct foodMenu order[], int size);
+void displayOrder(struct foodMenu order[], int size);
+int equalsIgnoreCase(char s1[], char s2[]);
+int paymentMenu(struct foodMenu order[], int size, int notEnough);
+void record(struct foodMenu order[], int size);
+
+int s = 0;  //counter of food available in menu
 char payment[15];   //holds the payment
+
 int main(){
     for(int i = 0 ; i < sizeof(payment) ; i++)  //initialize payment character array to NULL
         payment[i] = 0;
@@ -33,26 +37,25 @@ int main(){
     //start of counting
     char lineCounter[1024];
     while(fgets(lineCounter, 1024, fileCounter))
-        size++;
+        s++;
     fclose(fileCounter);
-    size--;        //to disregard the labels counted in the csv file
-    if(size == 0){       //catcher if menu.csv is empty
+    s--;        //to disregard the labels counted in the csv file
+    if(s == 0){       //catcher if menu.csv is empty
         printf("Menu is out of order.");
         return 0;
     }
     
-    struct foodMenu order[size];     //declare array of struct foodmenu
+    struct foodMenu order[s];     //declare array of struct foodmenu
 
     //transfer data from file to foodmenu_class array
     FILE* fileTransfer = fopen("menu.csv","r");
     char lineTransfer[1024];
     fgets(lineTransfer, 1024, fileTransfer); //reads first line (labels in csv file)
-    for(int i=0; i < size ; i++){
+    for(int i=0; i < s ; i++){
         fgets(lineTransfer, 1024, fileTransfer);
         const char *data = strtok(lineTransfer, ",");
         strcpy(order[i].name, data);
-        char trashArr[1];
-        int trash = equalsIgnoreCase(trashArr, order[i].name);
+        int trash = equalsIgnoreCase("", order[i].name);  //make uppercase
         order[i].price = atof(strtok(NULL, ","));
         order[i].qty = 0;
     }
@@ -73,10 +76,12 @@ int main(){
         choiceError = 0;
         switch (choice){
             case '1':
-                getOrder(name, order, size, 0, "", 0);
+                getOrder(name, order, s, 0, "", 0);
+                printf("TEST\n");
+                cont = 1;
                 break;
             case '2':
-                paid = paymentMenu(order, size, 0);
+                paid = paymentMenu(order, s, 0);
                 break;
             case '3':
                 cont = 0;
@@ -85,16 +90,15 @@ int main(){
                 break;
             default:
                 choiceError = 1;
-                break;
         }
         if(paid){
             system("clear");    //clear console
-            receipt(name, order, size);     //display receipt
-            record(order, size);
+            receipt(name, order, s);     //display receipt
+            record(order, s);
             cont = 0;   //end program if paid enough
         }
     }
-
+    
     return 0;
 }
 
@@ -167,7 +171,7 @@ void receipt(char name[], struct foodMenu order[], int size){
     printf("\n-------------------------\n");
 }
 
-void getOrder(char name[], struct foodMenu order[], int size, int foodNameError, char foodName[], int qtyError){
+void getOrder(char name[50], struct foodMenu order[s], int size, int foodNameError, char foodName[20], int qtyError){
     system("clear"); //clear console
     printf("Hi %s, ",name); 
     displayOrder(order, size);  //display orderlist
@@ -184,13 +188,13 @@ void getOrder(char name[], struct foodMenu order[], int size, int foodNameError,
         printf("Error: Quantity Invalid!");
 
     //enter food name
-    char foodInput[50];
+    char* foodInput = (char*) malloc(20 * sizeof(char));
     printf("\nEnter food name: ");
-    scanf(" %s", foodInput);
-
-    if(strcmp(foodInput, "..") == 0) //exit when .. is inputted
+    scanf(" %[^\n]", foodInput);
+    if(strcmp(foodInput, "..") == 0){ //exit when .. is inputted
         return;
-    
+    }
+
     for(int i = 0 ; i < size ; i++){    //find input if it exists
         if(equalsIgnoreCase(order[i].name, foodInput)==0){
             foodNameError = 0;
@@ -266,9 +270,11 @@ void displayOrder(struct foodMenu order[], int size){
     printf(" )\n");
 }
 
-int equalsIgnoreCase(char s1[], char s2[]){
-    for(int i=0 ; i < sizeof(s2) ; i++){
-        s2[i] = toupper(s2[i]);   
+int equalsIgnoreCase(char *s1, char *s2){
+    char string[1024];
+    strcpy(string, s2);
+    for(int i=0 ; i < sizeof(string) ; i++){
+        s2[i] = toupper(s2[i]);
     }
     return strcmp(s1,s2);
 }
